@@ -92,7 +92,6 @@ fn parse_hex_string(hex_string : &String) -> Vec<u8> {
     for i in 0..(hex_string.len() / 2){
         let pos = i * 2;
         let byte_string = hex_string.get(pos..(pos + 2)).expect("Could not extract partial string for parsing");
-        println!("{}", byte_string);
         let byte : u8 = u8::from_str_radix(byte_string, 16).expect("Could not parse byte");
         bytes.push (byte);
     }
@@ -104,12 +103,25 @@ fn test_parse_hex_string(){
     let hex_string = String::from("02AB1D00");
     let bytes : Vec<u8> = parse_hex_string(&hex_string);
     assert_eq!(bytes.len(), 4);
-    //assert_eq!(bytes[0], 0x02);
+    assert_eq!(bytes[0], 0x02);
     assert_eq!(bytes[1], 0xAB);
     assert_eq!(bytes[2], 0x1D);
     assert_eq!(bytes[3], 0x00);
 }
 
 fn main() {
-    println!("Hello, world!");
+    let path : String = String::from("zeKnirf.txt");
+    let lines : Vec<String> = read_file(&path);
+    let mut bytes : Vec<u8> = Vec::new();
+    for mut line in lines {
+        bytes.append(&mut parse_hex_string(&mut line));
+    }
+    let mut bytes_left : usize = bytes.len();
+    while bytes_left > 0 {
+       let mut size_to_write : usize = 0x10;
+       if bytes_left < 0x10 {
+           size_to_write = bytes_left; 
+       }
+       //TODO: Continue here
+    }
 }
