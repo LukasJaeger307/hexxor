@@ -76,12 +76,12 @@ fn test_read_file(){
     assert_eq!(lines.len(), 8);
     assert_eq!(lines[0], "02AB1D00");
     assert_eq!(lines[1], "DEADBEEF");
-    assert_eq!(lines[2], "DEADCODE");
+    assert_eq!(lines[2], "DEADC0DE");
     assert_eq!(lines[3], "C0FFEE00");
     assert_eq!(lines[4], "DEADCAFF");
-    assert_eq!(lines[5], "CODEBEEF");
+    assert_eq!(lines[5], "C0DEBEEF");
     assert_eq!(lines[6], "BEEFCAFF");
-    assert_eq!(lines[7], "CODECAFF");
+    assert_eq!(lines[7], "C0DECAFF");
 }
 
 fn parse_hex_string(hex_string : &String) -> Vec<u8> {
@@ -117,11 +117,20 @@ fn main() {
         bytes.append(&mut parse_hex_string(&mut line));
     }
     let mut bytes_left : usize = bytes.len();
+    let mut address : usize = 0x0000;
     while bytes_left > 0 {
        let mut size_to_write : usize = 0x10;
        if bytes_left < 0x10 {
            size_to_write = bytes_left; 
        }
+       let mut bytes_to_write : Vec <u8> = Vec::new();
+       for i in 0..size_to_write {
+           bytes_to_write.push (bytes[address + i]);
+       }
+       let address_lower = (address & 0xFFFF) as u16;
+       println!("{}", convert_to_line(&bytes_to_write, address_lower, 0x00));
+       address += size_to_write;
+       bytes_left -= size_to_write;
        //TODO: Continue here
     }
 }
