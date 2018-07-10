@@ -1,0 +1,9 @@
+[package]
+name = "hexxor"
+version = "0.1.0"
+authors = ["Lukas Jäger <lukas_jaeger@gmx.net>"]
+
+[dependencies]
+docopt = "0.9"
+serde = "1.0"
+serde_derive = "1.0"

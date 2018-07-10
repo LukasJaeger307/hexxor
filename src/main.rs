@@ -5,7 +5,13 @@
  * To Public License, Version 2, as published by Sam Hocevar. See
  * http://www.wtfpl.net/ for more details. 
  */
+#[macro_use]
+extern crate serde_derive;
+extern crate docopt;
 
+use docopt::Docopt;
+
+use std::process;
 use std::fs::File;
 use std::io::{Read};
 
@@ -109,8 +115,35 @@ fn test_parse_hex_string(){
     assert_eq!(bytes[3], 0x00);
 }
 
+const USAGE: &'static str = "
+Hexxor.
+
+Usage:
+ hexxor <file>
+      
+Options:
+";
+
+#[derive(Debug, Deserialize)]
+struct Args {
+    arg_file : Vec<String>,
+}
+
+
 fn main() {
-    let path : String = String::from("zeKnirf.txt");
+    let args: Args = Docopt::new(USAGE)
+        .and_then(|d| d.deserialize())
+        .unwrap_or_else(|e| e.exit());
+    let mut path : String = String::new();
+    match args.arg_file.first(){
+        Some (x) => {
+            path.push_str(x);
+        },
+        None => {
+            println!("No path specified");
+            process::exit(1);
+        },
+    }
     let lines : Vec<String> = read_file(&path);
     let mut bytes : Vec<u8> = Vec::new();
     for mut line in lines {
@@ -131,6 +164,7 @@ fn main() {
        println!("{}", convert_to_line(&bytes_to_write, address_lower, 0x00));
        address += size_to_write;
        bytes_left -= size_to_write;
-       //TODO: Continue here
     }
+    // Printing end delimiter
+    println!(":00000001FF");
 }
