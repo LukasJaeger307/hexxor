@@ -119,14 +119,17 @@ const USAGE: &'static str = "
 Hexxor.
 
 Usage:
- hexxor <file>
+  hexxor <file> [--address=<address>]
       
 Options:
+  --address=<address>   The start address of the section to write.
+
 ";
 
 #[derive(Debug, Deserialize)]
 struct Args {
     arg_file : Vec<String>,
+    flag_address : String,
 }
 
 
@@ -134,6 +137,11 @@ fn main() {
     let args: Args = Docopt::new(USAGE)
         .and_then(|d| d.deserialize())
         .unwrap_or_else(|e| e.exit());
+    let addr_str : String = args.flag_address;
+    let mut addr = 0;
+    if !addr_str.is_empty() {
+        addr = u32::from_str_radix(&addr_str, 16).expect("Could not parse address");
+    }
     let mut path : String = String::new();
     match args.arg_file.first(){
         Some (x) => {
@@ -150,7 +158,12 @@ fn main() {
         bytes.append(&mut parse_hex_string(&mut line));
     }
     let mut bytes_left : usize = bytes.len();
-    let mut address : usize = 0x0000;
+    let address_uh : u16 = ((addr >> 16) & 0xFFFF) as u16;
+    let mut address_prefix_bytes : Vec<u8> = Vec::new();
+    address_prefix_bytes.push(((address_uh >> 8) & 0xFF) as u8);
+    address_prefix_bytes.push((address_uh & 0xFF) as u8);
+    println!("{}", convert_to_line(&address_prefix_bytes, 0x0000,0x04));
+    let mut address_lh : usize = (addr & 0xFFFF) as usize;
     while bytes_left > 0 {
        let mut size_to_write : usize = 0x10;
        if bytes_left < 0x10 {
@@ -158,11 +171,11 @@ fn main() {
        }
        let mut bytes_to_write : Vec <u8> = Vec::new();
        for i in 0..size_to_write {
-           bytes_to_write.push (bytes[address + i]);
+           bytes_to_write.push (bytes[address_lh + i]);
        }
-       let address_lower = (address & 0xFFFF) as u16;
-       println!("{}", convert_to_line(&bytes_to_write, address_lower, 0x00));
-       address += size_to_write;
+       let address_u16 = (address_lh & 0xFFFF) as u16;
+       println!("{}", convert_to_line(&bytes_to_write, address_u16, 0x00));
+       address_lh += size_to_write;
        bytes_left -= size_to_write;
     }
     // Printing end delimiter
