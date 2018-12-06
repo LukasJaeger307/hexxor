@@ -164,6 +164,7 @@ fn main() {
     address_prefix_bytes.push((address_uh & 0xFF) as u8);
     println!("{}", convert_to_line(&address_prefix_bytes, 0x0000,0x04));
     let mut address_lh : usize = (addr & 0xFFFF) as usize;
+    let mut bytes_written : usize = 0;
     while bytes_left > 0 {
        let mut size_to_write : usize = 0x10;
        if bytes_left < 0x10 {
@@ -171,11 +172,12 @@ fn main() {
        }
        let mut bytes_to_write : Vec <u8> = Vec::new();
        for i in 0..size_to_write {
-           bytes_to_write.push (bytes[address_lh + i]);
+           bytes_to_write.push (bytes[i + bytes_written]);
        }
        let address_u16 = (address_lh & 0xFFFF) as u16;
        println!("{}", convert_to_line(&bytes_to_write, address_u16, 0x00));
        address_lh += size_to_write;
+       bytes_written += size_to_write;
        bytes_left -= size_to_write;
     }
     // Printing end delimiter
