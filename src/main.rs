@@ -21,7 +21,12 @@ fn calc_checksum(bytes : &Vec<u8>) -> u8 {
         sum += *x as u32;
     }
     let sum_as_byte : u8 = (sum & 0xFF) as u8;
-    !(sum_as_byte) + 0x01
+    if !(sum_as_byte) == 0xFF {
+        0x00
+    }
+    else {
+        !(sum_as_byte) + 0x01
+    }
 }
 
 #[test]
